@@ -20,6 +20,18 @@ public class NewsletterController : ControllerBase
     [HttpPost]
     public ActionResult Subscribe(string Email)
     {
+        //check if the email is a gmail email and then replace the period with no character, you could also use System.Net.Mail.MailAddress to check
+        //if its a valid gmail address
+        
+        if (Email.EndsWith("@gmail.com"))
+            {
+                int atIndex = Email.IndexOf("@");
+                string localPart = Email.Substring(0, atIndex).Replace(".", "");
+                string domainPart = Email.Substring(atIndex);
+                Email = localPart + domainPart;
+            }
+        
+        
         var inserted = _connection.Execute(@"
             INSERT INTO NewsletterSubscription (Email)
             SELECT *
