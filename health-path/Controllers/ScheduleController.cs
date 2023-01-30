@@ -19,16 +19,22 @@ public class ScheduleController : ControllerBase
     }
 
     [HttpGet]
-    public ActionResult<IEnumerable<ScheduleEvent>> Fetch()
+     public ActionResult<IEnumerable<ScheduleEvent>> Fetch()
     {
         var dbResults = ReadData();
+        //first we store a grouping of an event based on the name
+        var combinedResults = dbResults
+            .GroupBy(x => x.Item1.Name)
+            .Select(g => 
+            {
+                //we select the first instance of a scheduleevent object  
+                var firstEvent = g.First().Item1;
+                 // Set the recurrences for the first event to the list of recurrences from the grouped results
+                firstEvent.Recurrences = g.Select(x => x.Item2).ToList();
+                return firstEvent;
+            });
 
-        var preparedResults = dbResults.Select((t) => {
-            t.Item1.Recurrences.Add(t.Item2);
-            return t.Item1;
-        });
-
-        return Ok(preparedResults);
+        return Ok(combinedResults);
     }
 
     private IEnumerable<(ScheduleEvent, ScheduleEventRecurrence)> ReadData() {
